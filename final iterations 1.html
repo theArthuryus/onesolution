@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Wheel of Life Chart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #eaeaea;
+            position: relative;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 1;
+            position: relative;
+            margin-top: 20px;
+        }
+        .result-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #34a5c4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .result-btn:hover {
+            background-color: #1f87a2;
+        }
+        .score-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #00405f;
+            font-weight: bold;
+        }
+        .score-message {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #00405f;
+        }
+        #canvas {
+            height: 90vh;
+            width: 100vw;
+            position: absolute;
+            top: 200px;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #header-image {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            z-index: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="header-image">
+        <img src="https://i.postimg.cc/256gqBsS/Prancheta-1.png" alt="Header Image">
+    </div>
+    <div id="canvas"></div>
+    <div class="container">
+        <button class="result-btn" onclick="showResults()">Mostrar resultado</button>
+        <div class="score-text" id="scoreText"></div>
+        <div class="score-message" id="scoreMessage"></div>
+    </div>
+
+    <script>
+        const numSegments = 12;
+        const numLevels = 10;
+        const labels = [
+            ["RENDA", "PRINCIPAL"], ["RENDA", "EXTRA"], ["RENDA", "PASSIVA"], 
+            ["FLUXO", "DE CAIXA"], ["DESPESAS", "PESSOAIS"], ["DESPESAS", 
+            "FAMILIARES"], ["DÍVIDAS"], ["INVESTIMENTOS"], 
+            ["RESERVA", "DE SEGURANÇA"], ["PREVIDÊNCIA"], ["DOAÇÃO"], 
+            ["CRESCIMENTO", "PESSOAL"]
+        ];
+
+        const baseColor = { r: 52, g: 165, b: 196 };
+        const segmentColors = Array.from({ length: numSegments }, () =>
+            Array(numLevels).fill('#ffffff')
+        );
+
+        const paper = Raphael("canvas", 800, 800);
+        const centerX = paper.width / 2; 
+        const centerY = paper.height / 2;
+        const radius = 250; 
+        const angleStep = (2 * Math.PI) / numSegments;
+        const levelRadiusStep = radius / numLevels;
+
+        function createSegmentPath(innerRadius, outerRadius, startAngle, endAngle) {
+            const startX = centerX + innerRadius * Math.cos(startAngle);
+            const startY = centerY + innerRadius * Math.sin(startAngle);
+            const endX = centerX + innerRadius * Math.cos(endAngle);
+            const endY = centerY + innerRadius * Math.sin(endAngle);
+            const outerStartX = centerX + outerRadius * Math.cos(startAngle);
+            const outerStartY = centerY + outerRadius * Math.sin(startAngle);
+            const outerEndX = centerX + outerRadius * Math.cos(endAngle);
+            const outerEndY = centerY + outerRadius * Math.sin(endAngle);
+            return [
+                "M", startX, startY,
+                "A", innerRadius, innerRadius, 0, 0, 1, endX, endY,
+                "L", outerEndX, outerEndY,
+                "A", outerRadius, outerRadius, 0, 0, 0, outerStartX, outerStartY,
+                "Z"
+            ].join(" ");
+        }
+
+        function drawChart() {
+            paper.clear();
+
+            for (let i = 0; i < numSegments; i++) {
+                for (let j = 0; j < numLevels; j++) {
+                    const startAngle = i * angleStep;
+                    const endAngle = startAngle + angleStep;
+                    const innerRadius = j * levelRadiusStep;
+                    const outerRadius = innerRadius + levelRadiusStep;
+
+                    const path = createSegmentPath(innerRadius, outerRadius, startAngle, endAngle);
+                    const segment = paper.path(path);
+                    segment.attr({ fill: segmentColors[i][j], stroke: '#16417C', 'stroke-width': 1 });
+                    segment.data('segment', i);
+                    segment.data('level', j);
+                    segment.click(handleSegmentClick);
+                }
+
+                const labelAngle = -Math.PI / 2 + angleStep * (i) - (Math.PI / 12);
+                const labelX = centerX + (radius * 1.3) * Math.cos(labelAngle);
+                const labelY = centerY + (radius * 1.3) * Math.sin(labelAngle);
+
+                if (labels[i].length > 1) {
+                    const firstLine = labels[i][0];
+                    const secondLine = labels[i][1];
+                    paper.text(labelX, labelY - 10, firstLine).attr({ 'font-size': 16, fill: '#00405f', 'font-weight': 'bold', 'text-anchor': 'middle' });
+                    paper.text(labelX, labelY + 10, secondLine).attr({ 'font-size': 16, fill: '#00405f', 'font-weight': 'bold', 'text-anchor': 'middle' });
+                } else {
+                    paper.text(labelX, labelY, labels[i][0]).attr({ 'font-size': 16, fill: '#00405f', 'font-weight': 'bold', 'text-anchor': 'middle' });
+                }
+            }
+
+            paper.circle(centerX, centerY, radius + 4).attr({ stroke: '#00405f', 'stroke-width': 10, fill: 'none' });
+        }
+
+        function handleSegmentClick() {
+            const segmentIndex = this.data('segment');
+            const levelIndex = this.data('level');
+
+            // Check if the level is colored
+            const isColored = segmentColors[segmentIndex][levelIndex] !== '#ffffff';
+
+            if (!isColored) {
+                // If the segment is not colored, color it and all previous levels
+                for (let i = 0; i <= levelIndex; i++) {
+                    segmentColors[segmentIndex][i] = `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${(i + 1) / numLevels})`;
+                }
+            } else {
+                // Toggle the clicked level color
+                segmentColors[segmentIndex][levelIndex] = '#ffffff';
+
+                // Uncolor all higher levels and the current level
+                for (let i = levelIndex + 1; i < numLevels; i++) {
+                    segmentColors[segmentIndex][i] = '#ffffff';
+                }
+            }
+
+            drawChart();
+        }
+
+        function showResults() {
+            let coloredPieces = 0;
+
+            for (let i = 0; i < numSegments; i++) {
+                for (let j = 0; j < numLevels; j++) {
+                    if (segmentColors[i][j] !== '#ffffff') {
+                        coloredPieces++;
+                    }
+                }
+            }
+
+            const score = (coloredPieces / (numSegments * numLevels) * 10).toFixed(2);
+            document.getElementById('scoreText').textContent = `Sua pontuação é: ${score} de 10`;
+
+            let message = "";
+            if (score >= 1 && score < 2) {
+                message = "Ruim";
+            } else if (score >= 2 && score < 4) {
+                message = "Regular";
+            } else if (score >= 4 && score < 6) {
+                message = "Bom";
+            } else if (score >= 6 && score < 8) {
+                message = "Ótimo";
+            } else if (score >= 8 && score <= 10) {
+                message = "Excelente";
+            }
+            document.getElementById('scoreMessage').textContent = message;
+        }
+
+        drawChart();
+    </script>
+</body>
+</html>
