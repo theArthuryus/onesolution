@@ -11,7 +11,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center; /* Center vertically */
             margin: 0;
             padding: 0;
             height: 100vh;
@@ -53,11 +53,10 @@
             color: #00405f;
         }
         #canvas {
-            height: 90vh;
-            width: 100vw;
-            position: absolute;
-            top: 200px;
-            left: 0;
+            height: 90vh; 
+            width: 90vw; /* Make it responsive */
+            max-width: 800px; /* Set a maximum width */
+            max-height: 800px; /* Set a maximum height */
             display: flex;
             align-items: center;
             justify-content: center;
