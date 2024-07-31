@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Wheel of Life Chart</title>
+    <title>Interactive Wheel of Life Chart 2v</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
     <style>
         body {
@@ -63,10 +63,13 @@
         }
         @media (max-width: 600px) {
             #canvas {
-                height: 50vh; /* Further adjust height for smaller screens */
-                width: 50vw; /* Further adjust width for smaller screens */
-                max-width: 300px; /* Set a smaller maximum width */
-                max-height: 300px; /* Set a smaller maximum height */
+                height: 40vh; /* Reduce height for mobile */
+                width: 40vw; /* Reduce width for mobile */
+                max-width: 200px; /* Set a smaller maximum width */
+                max-height: 200px; /* Set a smaller maximum height */
+            }
+            .container {
+                margin-top: 10px; /* Adjust margin for smaller layout */
             }
         }
         #header-image {
